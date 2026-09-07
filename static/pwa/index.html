@@ -532,7 +532,11 @@ async function playText(text, btnId) {
   if (result) {
     const { url, stopAfterMs } = result;
     const audio = new Audio(url);
+    let finished = false;
     const cleanup = () => {
+      if (finished) return;   // prevent double-fire from onended + setTimeout
+      finished = true;
+      URL.revokeObjectURL(url);
       setTTSState(false);
       if (btnId) {
         const btn = document.getElementById(btnId);
@@ -541,9 +545,9 @@ async function playText(text, btnId) {
     };
     audio.onended = cleanup;
     audio.play();
-    // If stopAfterMs is set, stop early to trim trailing syllables (e.g. "pin" in "ngipin")
+    // Stop early to trim trailing syllables (e.g. "pin" in "ngipin")
     if (stopAfterMs) {
-      setTimeout(() => { audio.pause(); audio.currentTime = 0; cleanup(); }, stopAfterMs);
+      setTimeout(() => { audio.pause(); cleanup(); }, stopAfterMs);
     }
     return;
   }
@@ -646,11 +650,18 @@ async function playTextAndWait(text, btnId) {
       if (result) {
         const { url, stopAfterMs } = result;
         const audio = new Audio(url);
-        audio.onended = done;
-        audio.onerror = done;
+        let finished = false;
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          URL.revokeObjectURL(url);
+          done();
+        };
+        audio.onended = finish;
+        audio.onerror = finish;
         audio.play();
         if (stopAfterMs) {
-          setTimeout(() => { audio.pause(); audio.currentTime = 0; done(); }, stopAfterMs);
+          setTimeout(() => { audio.pause(); finish(); }, stopAfterMs);
         }
         return;
       }
