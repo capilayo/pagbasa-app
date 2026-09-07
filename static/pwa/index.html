@@ -428,12 +428,14 @@ function buildChart() {
 // ═══════════════════════════════════════════════════
 
 // Hardcoded fallback — used if /pwa/ng-ipa.json fetch fails
+// plain:true  → send as plain text (model knows this word naturally, like "n" row)
+// plain:false → send as SSML IPA phoneme (model needs explicit guidance)
 const NG_HINTS_FALLBACK = {
-  'nga': { ipa: 'ŋa' },
-  'nge': { ipa: 'ŋe' },
-  'ngi': { ipa: 'ŋi' },
-  'ngo': { ipa: 'ŋo' },
-  'ngu': { ipa: 'ŋu' },
+  'nga': { ipa: 'ŋa', plain: true  }, // "nga" is a real common Tagalog word ✅
+  'nge': { ipa: 'ŋe', plain: false },
+  'ngi': { ipa: 'ŋi', plain: false },
+  'ngo': { ipa: 'ŋo', plain: false },
+  'ngu': { ipa: 'ŋu', plain: false },
 };
 
 // Live map — populated from ng-ipa.json, falls back to NG_HINTS_FALLBACK
@@ -461,13 +463,19 @@ let NG_HINTS = { ...NG_HINTS_FALLBACK };
 })();
 
 // Builds the TTS payload for a syllable.
-// ng+vowel syllables: SSML <phoneme alphabet="ipa"> with IPA from ng-ipa.json.
-// All other syllables: plain text sent as-is.
+// Strategy mirrors the "n" row pattern:
+//   - "nga"        → plain text (model knows it, produces full natural audio like "na/ne/ni")
+//   - nge/ngi/ngo/ngu → SSML IPA phoneme + 600ms break (rare onset needs explicit guidance)
+//   - all others   → plain text
 // Returns { text, ssml }
 function ttsPayload(syllable) {
   const hint = NG_HINTS[syllable];
   if (hint) {
-    // <break> after phoneme prevents audio cut-off; trailing "." cues natural ending
+    if (hint.plain) {
+      // Treat like the "n" row — plain text, no SSML, no cut-off risk
+      return { text: syllable, ssml: false };
+    }
+    // SSML IPA for rare ng+vowel combos + 600ms break to prevent cut-off
     return {
       text: `<speak><phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme><break time="600ms"/></speak>`,
       ssml: true,
