@@ -16,8 +16,8 @@ COPY --chown=appuser:appuser . .
 # Switch to non-root user
 USER 1001
 
-# Port Code Engine will route traffic to
+# Expose default port (Render/Railway override via PORT env var)
 EXPOSE 8080
 
-# Start gunicorn — 1 worker; Code Engine scales horizontally
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "120", "app:app"]
+# Start gunicorn — respects $PORT for Render/Railway/Code Engine
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 120 app:app"]

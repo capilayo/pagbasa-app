@@ -365,7 +365,7 @@
 
 </div>
 
-<footer>Unang Hakbang sa Pagbasa · ElevenLabs &amp; IBM Watson TTS</footer>
+<footer>Unang Hakbang sa Pagbasa · ElevenLabs TTS</footer>
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -437,30 +437,6 @@ async function callElevenLabsTTS(text) {
   } catch (e) { console.error(e); return null; }
 }
 
-async function callWatsonTTS(text) {
-  if (
-    typeof WATSON_CONFIG === 'undefined' ||
-    !WATSON_CONFIG.apiKey ||
-    WATSON_CONFIG.apiKey === ''
-  ) return null;
-  try {
-    const res = await fetch(
-      `${WATSON_CONFIG.url}/v1/synthesize?voice=${encodeURIComponent(WATSON_CONFIG.voiceTL || WATSON_CONFIG.voice)}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Basic ' + btoa('apikey:' + WATSON_CONFIG.apiKey),
-          'Content-Type':  'application/json',
-          'Accept':        WATSON_CONFIG.format,
-        },
-        body: JSON.stringify({ text }),
-      }
-    );
-    if (!res.ok) return null;
-    return URL.createObjectURL(await res.blob());
-  } catch (e) { return null; }
-}
-
 function setTTSState(speaking) {
   document.getElementById('tts-dot').className = 'dot' + (speaking ? ' speaking' : '');
   document.getElementById('tts-status').textContent = speaking
@@ -489,7 +465,7 @@ async function playText(text, btnId) {
   }
 
   setTTSState(true);
-  const url = await callElevenLabsTTS(text) || await callWatsonTTS(text);
+  const url = await callElevenLabsTTS(text);
 
   if (url) {
     const audio = new Audio(url);
@@ -598,7 +574,7 @@ async function playTextAndWait(text, btnId) {
     };
 
     (async () => {
-      const url = await callElevenLabsTTS(text) || await callWatsonTTS(text);
+      const url = await callElevenLabsTTS(text);
       if (url) {
         const audio = new Audio(url);
         audio.onended = done;
