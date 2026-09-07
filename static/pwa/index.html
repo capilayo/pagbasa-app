@@ -427,59 +427,33 @@ function buildChart() {
 //  ARPAbet:  nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
 // ═══════════════════════════════════════════════════
 
-// Hardcoded fallback — used if /pwa/ng-ipa.json fetch fails
-// plain:true  → send as plain text (model knows this word naturally, like "n" row)
-// plain:false → send as SSML IPA phoneme (model needs explicit guidance)
-const NG_HINTS_FALLBACK = {
-  'nga': { ipa: 'ŋa', plain: true  }, // "nga" is a real common Tagalog word ✅
-  'nge': { ipa: 'ŋe', plain: false },
-  'ngi': { ipa: 'ŋi', plain: false },
-  'ngo': { ipa: 'ŋo', plain: false },
-  'ngu': { ipa: 'ŋu', plain: false },
+// ng+vowel pronunciation map.
+// SSML IPA proved unreliable for nge/ngi/ngo/ngu on ElevenLabs multilingual v2.
+// Solution: send a real Tagalog word that STARTS with the target ng+vowel sound.
+// The model pronounces the full word naturally — child hears the correct onset.
+// Same strategy that makes "nga" work: plain text of a known word.
+//
+// Words chosen (verified real Tagalog):
+//   nga  → "nga"    (particle — model knows it perfectly)
+//   nge  → "nenge"  (nickname for a young girl)
+//   ngi  → "ngipin" (tooth)
+//   ngo  → "ngongo" (nasal speaking style)
+//   ngu  → "nguya"  (to chew)
+const NG_WORD = {
+  'nga': 'nga',
+  'nge': 'nenge',
+  'ngi': 'ngipin',
+  'ngo': 'ngongo',
+  'ngu': 'nguya',
 };
 
-// Live map — populated from ng-ipa.json, falls back to NG_HINTS_FALLBACK
-let NG_HINTS = { ...NG_HINTS_FALLBACK };
-
-// Load IPA dictionary from server at startup (programmatic mapping)
-(async function loadNgIpaDict() {
-  try {
-    const res = await fetch('/pwa/ng-ipa.json');
-    if (!res.ok) throw new Error('fetch failed');
-    const dict = await res.json();
-    // Rebuild NG_HINTS from JSON — only keep entries with a valid ipa field
-    const built = {};
-    for (const [syl, data] of Object.entries(dict)) {
-      if (syl.startsWith('_')) continue;  // skip metadata keys
-      if (data.ipa) built[syl] = data;
-    }
-    if (Object.keys(built).length > 0) {
-      NG_HINTS = built;
-      console.info('[pagbasa] ng-ipa.json loaded — IPA map active:', Object.keys(built));
-    }
-  } catch (e) {
-    console.warn('[pagbasa] ng-ipa.json unavailable, using fallback IPA map:', e.message);
-  }
-})();
-
 // Builds the TTS payload for a syllable.
-// Strategy mirrors the "n" row pattern:
-//   - "nga"        → plain text (model knows it, produces full natural audio like "na/ne/ni")
-//   - nge/ngi/ngo/ngu → SSML IPA phoneme + 600ms break (rare onset needs explicit guidance)
-//   - all others   → plain text
+// ng+vowel → plain text real Tagalog word (same pattern as n-row)
+// all others → plain text syllable as-is
 // Returns { text, ssml }
 function ttsPayload(syllable) {
-  const hint = NG_HINTS[syllable];
-  if (hint) {
-    if (hint.plain) {
-      // Treat like the "n" row — plain text, no SSML, no cut-off risk
-      return { text: syllable, ssml: false };
-    }
-    // SSML IPA for rare ng+vowel combos + 600ms break to prevent cut-off
-    return {
-      text: `<speak><phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme><break time="600ms"/></speak>`,
-      ssml: true,
-    };
+  if (NG_WORD[syllable]) {
+    return { text: NG_WORD[syllable], ssml: false };
   }
   return { text: syllable, ssml: false };
 }
