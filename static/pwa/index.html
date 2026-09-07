@@ -419,21 +419,24 @@ function buildChart() {
 // ═══════════════════════════════════════════════════
 //  PRONUNCIATION MAP  (ng+vowel special handling)
 //
-//  Strategy per ElevenLabs guidance:
-//   1. SSML <phoneme alphabet="ipa"> for exact IPA (ŋa/ŋe/ŋi/ŋo/ŋu)
-//   2. Triple repetition ("nga nga nga") for contextual reinforcement
-//   3. Alternative phonetic plain-text spelling as final fallback
+//  IPA values confirmed via open-dict-data/ipa-dict Malay dictionary
+//  (Malay shares the same velar nasal ŋ onset as Tagalog):
+//    ngah /ŋah/ → nga /ŋa/    ngebut /ŋebut/ → nge /ŋe/
+//    ngeri /ŋeri/ → ngi /ŋi/  ngomél /ŋomel/ → ngo /ŋo/
+//    ngilu /ŋilu/ → ngu /ŋu/
 //
-//  ARPAbet: nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
-//  All other syllables: plain text, no wrapping.
+//  Primary:  SSML <phoneme alphabet="ipa"> — exact IPA sent to ElevenLabs
+//  Fallback: Malay word starting with the same ng+vowel onset (better model
+//            coverage than Tagalog for rare syllables in eleven_multilingual_v2)
+//  ARPAbet:  nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
 // ═══════════════════════════════════════════════════
 const NG_HINTS = {
-  //        ipa    plain-text fallback   real Tagalog word context
-  'nga': { ipa: 'ŋa', alt: 'ng-a',  word: 'nganga'  },
-  'nge': { ipa: 'ŋe', alt: 'ng-e',  word: 'nenge'   },
-  'ngi': { ipa: 'ŋi', alt: 'ng-i',  word: 'ngipin'  },
-  'ngo': { ipa: 'ŋo', alt: 'ng-o',  word: 'ngongo'  },
-  'ngu': { ipa: 'ŋu', alt: 'ng-u',  word: 'nguya'   },
+  // syllable  IPA    alt spelling  Malay word (ipa-dict ma.txt verified)
+  'nga': { ipa: 'ŋa', alt: 'ng-a', word: 'ngah'    }, // Malay ngah   /ŋah/
+  'nge': { ipa: 'ŋe', alt: 'ng-e', word: 'ngebut'  }, // Malay ngebut /ŋebut/
+  'ngi': { ipa: 'ŋi', alt: 'ng-i', word: 'ngeri'   }, // Malay ngeri  /ŋeri/
+  'ngo': { ipa: 'ŋo', alt: 'ng-o', word: 'ngomél'  }, // Malay ngomél /ŋomel/
+  'ngu': { ipa: 'ŋu', alt: 'ng-u', word: 'ngilu'   }, // Malay ngilu  /ŋilu/
 };
 
 // Builds the TTS payload for a syllable.
