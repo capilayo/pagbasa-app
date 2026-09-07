@@ -469,7 +469,7 @@ function ttsPayload(syllable) {
   if (hint) {
     // <break> after phoneme prevents audio cut-off; trailing "." cues natural ending
     return {
-      text: `<speak><phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme><break time="400ms"/></speak>`,
+      text: `<speak><phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme><break time="600ms"/></speak>`,
       ssml: true,
     };
   }
