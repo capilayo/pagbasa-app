@@ -1,0 +1,27 @@
+{
+  "name": "Unang Hakbang sa Pagbasa",
+  "short_name": "Pagbasa",
+  "description": "Filipino syllabary chart and custom lesson reader powered by ElevenLabs TTS",
+  "start_url": "/pwa/",
+  "scope": "/pwa/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#7c3aed",
+  "theme_color": "#7c3aed",
+  "lang": "fil",
+  "icons": [
+    {
+      "src": "/pwa/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "kids"]
+}

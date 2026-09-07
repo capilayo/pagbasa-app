@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Unang Hakbang sa Pagbasa</title>
+  <script src="/config.js"></script>
+  <link rel="manifest" href="/pwa/manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pagbasa" />
+  <meta name="theme-color" content="#7c3aed" />
+  <link rel="apple-touch-icon" href="/pwa/icons/icon-192.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary:   #7c3aed;
+      --primary-lt:#ede9fe;
+      --accent:    #f59e0b;
+      --accent-lt: #fef3c7;
+      --green:     #10b981;
+      --green-lt:  #d1fae5;
+      --red:       #ef4444;
+      --bg:        #fdf6ff;
+      --surface:   #ffffff;
+      --text:      #1e1b4b;
+      --muted:     #6b7280;
+      --border:    #e5e7eb;
+      --shadow:    0 4px 20px rgba(124,58,237,.10);
+    }
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 32px;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1       { font-size: 1.15rem; font-weight: 800; }
+    header h1 span  { display: block; font-size: .78rem; font-weight: 400; opacity: .75; }
+    .nav-back {
+      background: rgba(255,255,255,.18);
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      padding: 6px 14px;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ── Container ── */
+    .container {
+      width: 100%;
+      max-width: 520px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Mode tabs ── */
+    .mode-tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+    }
+    .mode-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* ── Played bubble ── */
+    .played-bubble {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 16px;
+      padding: 14px 20px;
+      font-size: 2.2rem;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: 6px;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+      transition: background .3s;
+    }
+    .played-bubble.flash {
+      background: var(--accent);
+      animation: flash .35s ease;
+    }
+    @keyframes flash {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Syllabary grid ── */
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .card-label {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .vowel-header {
+      display: grid;
+      grid-template-columns: 44px repeat(5, 1fr);
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+    .vowel-header span {
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--primary);
+      padding: 6px 0;
+      background: var(--primary-lt);
+      border-radius: 8px;
+    }
+    .vowel-header .empty { background: transparent; }
+
+    .syl-row {
+      display: grid;
+      grid-template-columns: 44px repeat(5, 1fr);
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+    .cons-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      font-weight: 800;
+      color: var(--muted);
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    .syl-btn {
+      padding: 10px 0;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      color: var(--text);
+      transition: all .15s;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+    .syl-btn:active   { transform: scale(.9); }
+    .syl-btn.playing  {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      transform: scale(1.1);
+      z-index: 2;
+      box-shadow: 0 4px 12px rgba(245,158,11,.4);
+    }
+    .syl-btn.done {
+      background: var(--green-lt);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* ── Vowel-only row ── */
+    .vowel-row {
+      display: grid;
+      grid-template-columns: 44px repeat(5, 1fr);
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+    .syl-btn.vowel {
+      background: var(--primary-lt);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+
+    /* ── Custom lesson editor ── */
+    .editor-card {
+      background: var(--surface);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: none;
+    }
+    .editor-card.visible { display: block; }
+    .editor-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 8px; }
+    .editor-textarea {
+      width: 100%;
+      min-height: 90px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .editor-textarea:focus { border-color: var(--primary); }
+    .editor-hint { font-size: .75rem; color: var(--muted); margin-top: 6px; margin-bottom: 10px; }
+
+    .custom-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .custom-chip {
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: var(--primary-lt);
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-chip:active { transform: scale(.93); }
+    .custom-chip.playing {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:active   { transform: scale(.96); opacity: .85; }
+    .btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+    .btn-primary  { background: var(--primary); color: #fff; }
+    .btn-green    { background: var(--green);   color: #fff; }
+    .btn-red      { background: var(--red);     color: #fff; }
+    .btn-outline  { background: var(--surface); color: var(--primary); border: 2px solid var(--primary); }
+
+    .play-all-row { display: none; gap: 8px; margin-top: 10px; }
+    .play-all-row.visible { display: flex; }
+
+    /* ── TTS indicator ── */
+    .tts-indicator { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: var(--muted); padding: 4px 0; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background .3s; }
+    .dot.speaking { background: var(--green); animation: blink .6s infinite alternate; }
+    @keyframes blink { from { opacity: 1; } to { opacity: .3; } }
+
+    footer { margin-top: 8px; font-size: .72rem; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Unang Hakbang ✨<span>sa Pagbasa</span></h1>
+  </div>
+  
+</header>
+
+<div class="container">
+
+  <!-- Mode selector -->
+  <div class="mode-tabs">
+    <button class="mode-btn active" id="mode-chart"  onclick="setMode('chart')">📊 Syllabary Chart</button>
+    <button class="mode-btn"        id="mode-custom" onclick="setMode('custom')">✏️ Custom Lesson</button>
+  </div>
+
+  <!-- Currently playing display -->
+  <div class="played-bubble" id="played-bubble">—</div>
+  <div class="tts-indicator">
+    <div class="dot" id="tts-dot"></div>
+    <span id="tts-status">Pindutin ang pantig para marinig</span>
+  </div>
+
+  <!-- ── SYLLABARY CHART ── -->
+  <div class="card" id="chart-section">
+    <div class="card-label">📖 I-tap ang pantig para marinig</div>
+
+    <!-- Vowel header row -->
+    <div class="vowel-header">
+      <span class="empty"></span>
+      <span>a</span><span>e</span><span>i</span><span>o</span><span>u</span>
+    </div>
+
+    <!-- Pure vowels -->
+    <div class="vowel-row">
+      <div class="cons-label">—</div>
+      <button class="syl-btn vowel" onclick="playSyl('a')" id="s-a">a</button>
+      <button class="syl-btn vowel" onclick="playSyl('e')" id="s-e">e</button>
+      <button class="syl-btn vowel" onclick="playSyl('i')" id="s-i">i</button>
+      <button class="syl-btn vowel" onclick="playSyl('o')" id="s-o">o</button>
+      <button class="syl-btn vowel" onclick="playSyl('u')" id="s-u">u</button>
+    </div>
+
+    <!-- Consonant rows (generated by JS) -->
+    <div id="syl-rows"></div>
+  </div>
+
+  <!-- ── CUSTOM LESSON EDITOR ── -->
+  <div class="editor-card" id="custom-section">
+    <div class="editor-label">✏️ I-type ang sariling aralin</div>
+    <textarea class="editor-textarea" id="custom-input"
+      placeholder="I-type ang mga salita o pantig dito&#10;Halimbawa: ba be bi bo bu&#10;O kaya: pusa aso ibon isda kuneho"></textarea>
+    <p class="editor-hint">Maghiwalay ng salita gamit ang espasyo o bagong linya. Pindutin ang Generate para makita ang mga butones.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-generate" onclick="generateCustom()">Generate ▶</button>
+      <button class="btn btn-outline"  id="btn-clear"   onclick="clearCustom()">Clear ✕</button>
+    </div>
+    <!-- Read All / Stop row — shown only after Generate -->
+    <div class="play-all-row" id="play-all-row">
+      <button class="btn btn-green" id="btn-play-all" onclick="startPlayAll()">🔊 Basahin Lahat</button>
+      <button class="btn btn-red"   id="btn-stop"     onclick="stopPlayAll()" style="display:none;">◼ Itigil</button>
+    </div>
+    <div class="custom-chips" id="custom-chips"></div>
+  </div>
+
+</div>
+
+<footer>Unang Hakbang sa Pagbasa · ElevenLabs &amp; IBM Watson TTS</footer>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  SYLLABARY DATA
+// ═══════════════════════════════════════════════════
+const CONSONANTS = ['b','k','d','g','h','l','m','n','ng','p','r','s','t','w','y'];
+const VOWELS     = ['a','e','i','o','u'];
+
+// ═══════════════════════════════════════════════════
+//  BUILD CHART
+// ═══════════════════════════════════════════════════
+function buildChart() {
+  const container = document.getElementById('syl-rows');
+  container.innerHTML = '';
+  CONSONANTS.forEach(cons => {
+    const row = document.createElement('div');
+    row.className = 'syl-row';
+    // Consonant label
+    const label = document.createElement('div');
+    label.className = 'cons-label';
+    label.textContent = cons;
+    row.appendChild(label);
+    // Syllable buttons
+    VOWELS.forEach(v => {
+      const syl = cons + v;
+      const btn = document.createElement('button');
+      btn.className = 'syl-btn';
+      btn.id = 's-' + syl;
+      btn.textContent = syl;
+      btn.onclick = () => playSyl(syl);
+      row.appendChild(btn);
+    });
+    container.appendChild(row);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  TTS
+// ═══════════════════════════════════════════════════
+let currentBtnId = null;
+
+async function callElevenLabsTTS(text) {
+  if (
+    typeof ELEVENLABS_CONFIG === 'undefined' ||
+    !ELEVENLABS_CONFIG.apiKey ||
+    ELEVENLABS_CONFIG.apiKey === '' ||
+    ELEVENLABS_CONFIG.apiKey.startsWith('your_')
+  ) return null;
+  try {
+    const res = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_CONFIG.voiceIdTL}?output_format=mp3_44100_128`,
+      {
+        method: 'POST',
+        headers: {
+          'xi-api-key':   ELEVENLABS_CONFIG.apiKey,
+          'Content-Type': 'application/json',
+          'Accept':       'audio/mpeg',
+        },
+        body: JSON.stringify({
+          text,
+          model_id: ELEVENLABS_CONFIG.model || 'eleven_multilingual_v2',
+          language_code: 'fil',
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+        }),
+      }
+    );
+    if (!res.ok) { console.error('ElevenLabs error:', res.status); return null; }
+    return URL.createObjectURL(await res.blob());
+  } catch (e) { console.error(e); return null; }
+}
+
+async function callWatsonTTS(text) {
+  if (
+    typeof WATSON_CONFIG === 'undefined' ||
+    !WATSON_CONFIG.apiKey ||
+    WATSON_CONFIG.apiKey === ''
+  ) return null;
+  try {
+    const res = await fetch(
+      `${WATSON_CONFIG.url}/v1/synthesize?voice=${encodeURIComponent(WATSON_CONFIG.voiceTL || WATSON_CONFIG.voice)}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa('apikey:' + WATSON_CONFIG.apiKey),
+          'Content-Type':  'application/json',
+          'Accept':        WATSON_CONFIG.format,
+        },
+        body: JSON.stringify({ text }),
+      }
+    );
+    if (!res.ok) return null;
+    return URL.createObjectURL(await res.blob());
+  } catch (e) { return null; }
+}
+
+function setTTSState(speaking) {
+  document.getElementById('tts-dot').className = 'dot' + (speaking ? ' speaking' : '');
+  document.getElementById('tts-status').textContent = speaking
+    ? 'Binabasa…'
+    : 'Pindutin ang pantig para marinig';
+}
+
+async function playText(text, btnId) {
+  // Reset previous playing button
+  if (currentBtnId) {
+    const prev = document.getElementById(currentBtnId);
+    if (prev) { prev.classList.remove('playing'); prev.classList.add('done'); }
+  }
+  currentBtnId = btnId;
+
+  // Flash the display bubble
+  const bubble = document.getElementById('played-bubble');
+  bubble.textContent = text;
+  bubble.classList.add('flash');
+  setTimeout(() => bubble.classList.remove('flash'), 400);
+
+  // Highlight active button
+  if (btnId) {
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add('playing');
+  }
+
+  setTTSState(true);
+  const url = await callElevenLabsTTS(text) || await callWatsonTTS(text);
+
+  if (url) {
+    const audio = new Audio(url);
+    audio.onended = () => {
+      setTTSState(false);
+      if (btnId) {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.classList.remove('playing');
+      }
+    };
+    audio.play();
+    return;
+  }
+
+  // SpeechSynthesis fallback
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'fil-PH'; utter.rate = 0.8; utter.pitch = 1.1;
+    utter.onend = () => {
+      setTTSState(false);
+      if (btnId) {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.classList.remove('playing');
+      }
+    };
+    window.speechSynthesis.speak(utter);
+  } else {
+    setTTSState(false);
+  }
+}
+
+function playSyl(syl) {
+  playText(syl, 's-' + syl);
+}
+
+// ═══════════════════════════════════════════════════
+//  MODE TOGGLE
+// ═══════════════════════════════════════════════════
+function setMode(mode) {
+  document.getElementById('mode-chart').classList.toggle('active',  mode === 'chart');
+  document.getElementById('mode-custom').classList.toggle('active', mode === 'custom');
+  document.getElementById('chart-section').style.display  = mode === 'chart'  ? 'block' : 'none';
+  document.getElementById('custom-section').classList.toggle('visible', mode === 'custom');
+}
+
+// ═══════════════════════════════════════════════════
+//  CUSTOM LESSON
+// ═══════════════════════════════════════════════════
+function generateCustom() {
+  const raw    = document.getElementById('custom-input').value.trim();
+  const tokens = raw.split(/[\s\n,]+/).map(t => t.trim()).filter(t => t.length > 0);
+  const chips  = document.getElementById('custom-chips');
+  chips.innerHTML = '';
+
+  if (!tokens.length) return;
+
+  tokens.forEach((token, i) => {
+    const id  = 'cc-' + i;
+    const btn = document.createElement('button');
+    btn.className   = 'custom-chip';
+    btn.id          = id;
+    btn.textContent = token;
+    btn.onclick     = () => { if (!isPlayingAll) playText(token, id); };
+    chips.appendChild(btn);
+  });
+
+  // Show the Read All row
+  document.getElementById('play-all-row').classList.add('visible');
+}
+
+function clearCustom() {
+  stopPlayAll();
+  document.getElementById('custom-input').value = '';
+  document.getElementById('custom-chips').innerHTML = '';
+  document.getElementById('played-bubble').textContent = '—';
+  document.getElementById('play-all-row').classList.remove('visible');
+}
+
+// ── Play All — waits for each audio to finish ──────
+let isPlayingAll  = false;
+let stopRequested = false;
+
+async function playTextAndWait(text, btnId) {
+  return new Promise(resolve => {
+    // Reset previous
+    if (currentBtnId && currentBtnId !== btnId) {
+      const prev = document.getElementById(currentBtnId);
+      if (prev) prev.classList.remove('playing');
+    }
+    currentBtnId = btnId;
+
+    const bubble = document.getElementById('played-bubble');
+    bubble.textContent = text;
+    bubble.classList.add('flash');
+    setTimeout(() => bubble.classList.remove('flash'), 400);
+
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add('playing');
+    setTTSState(true);
+
+    const done = () => {
+      setTTSState(false);
+      if (btn) { btn.classList.remove('playing'); btn.classList.add('done'); }
+      resolve();
+    };
+
+    (async () => {
+      const url = await callElevenLabsTTS(text) || await callWatsonTTS(text);
+      if (url) {
+        const audio = new Audio(url);
+        audio.onended = done;
+        audio.onerror = done;
+        audio.play();
+        return;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'fil-PH'; utter.rate = 0.8; utter.pitch = 1.1;
+        utter.onend = done; utter.onerror = done;
+        window.speechSynthesis.speak(utter);
+      } else {
+        done();
+      }
+    })();
+  });
+}
+
+async function startPlayAll() {
+  const chips = Array.from(document.querySelectorAll('.custom-chip'));
+  if (!chips.length) return;
+
+  isPlayingAll  = true;
+  stopRequested = false;
+
+  // Reset all chip states
+  chips.forEach(c => { c.classList.remove('done', 'playing'); });
+
+  // Toggle buttons
+  document.getElementById('btn-play-all').style.display = 'none';
+  document.getElementById('btn-stop').style.display     = '';
+  document.getElementById('btn-generate').disabled      = true;
+  document.getElementById('btn-clear').disabled         = true;
+
+  for (const chip of chips) {
+    if (stopRequested) break;
+    await playTextAndWait(chip.textContent, chip.id);
+    // Brief pause between words (300 ms)
+    if (!stopRequested) await new Promise(r => setTimeout(r, 300));
+  }
+
+  // Restore UI
+  isPlayingAll  = false;
+  stopRequested = false;
+  document.getElementById('btn-play-all').style.display = '';
+  document.getElementById('btn-stop').style.display     = 'none';
+  document.getElementById('btn-generate').disabled      = false;
+  document.getElementById('btn-clear').disabled         = false;
+  setTTSState(false);
+}
+
+function stopPlayAll() {
+  if (!isPlayingAll) return;
+  stopRequested = true;
+  window.speechSynthesis?.cancel();
+  setTTSState(false);
+  document.getElementById('btn-play-all').style.display = '';
+  document.getElementById('btn-stop').style.display     = 'none';
+  document.getElementById('btn-generate').disabled      = false;
+  document.getElementById('btn-clear').disabled         = false;
+  // Clear playing highlight
+  document.querySelectorAll('.custom-chip.playing')
+    .forEach(c => c.classList.remove('playing'));
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+buildChart();
+</script>
+
+<!-- PWA Install Banner -->
+<div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1e1b4b;color:#fff;padding:14px 16px;align-items:center;justify-content:space-between;gap:12px;z-index:200;font-family:-apple-system,sans-serif;font-size:.88rem;">
+  <span>📲 I-install ang app sa iyong Android</span>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button id="pwa-install-btn" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.85rem;">I-install</button>
+    <button onclick="document.getElementById(&apos;pwa-banner&apos;).style.display=&apos;none&apos;" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.85rem;">✕</button>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/pwa/sw.js', { scope: '/pwa/' })
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.warn('SW failed:', err));
+  });
+}
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const b = document.getElementById('pwa-banner');
+  if (b) b.style.display = 'flex';
+});
+
+const installBtn = document.getElementById('pwa-install-btn');
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('pwa-banner').style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  const b = document.getElementById('pwa-banner');
+  if (b) b.style.display = 'none';
+  deferredPrompt = null;
+});
+</script>
+</body>
+</html>
