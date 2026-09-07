@@ -428,38 +428,38 @@ function buildChart() {
 // ═══════════════════════════════════════════════════
 
 // ng+vowel pronunciation map.
-// SSML IPA proved unreliable for nge/ngi/ngo/ngu on ElevenLabs multilingual v2.
-// Solution: send a real Tagalog word that STARTS with the target ng+vowel sound.
-// The model pronounces the full word naturally — child hears the correct onset.
+// Strategy: use ElevenLabs `next_text` for context — the model sees the full word
+// for prosody/onset shaping but only SPEAKS the syllable text.
+// No audio trimming needed — no "pin" ever plays.
 //
 // Fields:
-//   word       — text sent to ElevenLabs TTS
-//   stopAfterMs — if set, stop audio playback after this many ms (trims trailing syllables)
+//   text      — what ElevenLabs actually speaks (the syllable)
+//   nextText  — context word passed as next_text (shapes pronunciation, never spoken)
 //
-// Words chosen (verified real Tagalog):
-//   nga  → "nga"    — single syllable, plays fully
-//   nge  → "nenge"  — ne·nge, child hears "nge" at end
-//   ngi  → "ngipin" — ngi·pin, stop after ~350ms to cut "pin"
-//   ngo  → "ngongo" — ngo·ngo, child hears "ngo" onset
-//   ngu  → "nguya"  — ngu·ya, child hears "ngu" onset
+// Words chosen (verified real Tagalog, IPA-confirmed via ipa-dict Malay):
+//   nga  → speaks "nga",    next_text "nganga"  /ŋa/
+//   nge  → speaks "nge",    next_text "nenge"   /ŋe/
+//   ngi  → speaks "ngi",    next_text "ngipin"  /ŋi/  ← fixes the "pin" problem
+//   ngo  → speaks "ngo",    next_text "ngongo"  /ŋo/
+//   ngu  → speaks "ngu",    next_text "nguya"   /ŋu/
 const NG_WORD = {
-  'nga': { word: 'nga'    },
-  'nge': { word: 'nenge'  },
-  'ngi': { word: 'ngipin', stopAfterMs: 350 },  // send full word for correct onset, trim "pin"
-  'ngo': { word: 'ngongo' },
-  'ngu': { word: 'nguya'  },
+  'nga': { text: 'nga', nextText: 'nganga'  },
+  'nge': { text: 'nge', nextText: 'nenge'   },
+  'ngi': { text: 'ngi', nextText: 'ngipin'  },
+  'ngo': { text: 'ngo', nextText: 'ngongo'  },
+  'ngu': { text: 'ngu', nextText: 'nguya'   },
 };
 
 // Builds the TTS payload for a syllable.
-// ng+vowel → real Tagalog word (plain text, same pattern as n-row)
-// all others → plain text syllable as-is
-// Returns { text, ssml, stopAfterMs }
+// ng+vowel → syllable text + nextText context word
+// all others → plain text as-is
+// Returns { text, nextText, ssml }
 function ttsPayload(syllable) {
   const hint = NG_WORD[syllable];
   if (hint) {
-    return { text: hint.word, ssml: false, stopAfterMs: hint.stopAfterMs || null };
+    return { text: hint.text, nextText: hint.nextText, ssml: false };
   }
-  return { text: syllable, ssml: false, stopAfterMs: null };
+  return { text: syllable, nextText: null, ssml: false };
 }
 
 // ═══════════════════════════════════════════════════
@@ -475,7 +475,7 @@ async function callElevenLabsTTS(text) {
     ELEVENLABS_CONFIG.apiKey.startsWith('your_')
   ) return null;
   try {
-    const { text: ttsText, ssml, stopAfterMs } = ttsPayload(text);
+    const { text: ttsText, nextText, ssml } = ttsPayload(text);
     const res = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_CONFIG.voiceIdTL}?output_format=mp3_44100_128`,
       {
@@ -490,12 +490,13 @@ async function callElevenLabsTTS(text) {
           model_id: ELEVENLABS_CONFIG.model || 'eleven_multilingual_v2',
           language_code: 'fil',
           ...(ssml && { text_type: 'ssml' }),
+          ...(nextText && { next_text: nextText }),
           voice_settings: { stability: 0.5, similarity_boost: 0.75 },
         }),
       }
     );
     if (!res.ok) { console.error('ElevenLabs error:', res.status); return null; }
-    return { url: URL.createObjectURL(await res.blob()), stopAfterMs };
+    return { url: URL.createObjectURL(await res.blob()), stopAfterMs: null };
   } catch (e) { console.error(e); return null; }
 }
 
