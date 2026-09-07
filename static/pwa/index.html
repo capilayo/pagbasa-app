@@ -436,16 +436,15 @@ const NG_HINTS = {
   'ngu': { ipa: 'ŋu', alt: 'ng-u',  word: 'nguya'   },
 };
 
-// Builds the best possible payload for ElevenLabs.
-// Uses SSML IPA with triple repetition for ng+vowel syllables.
+// Builds the TTS payload for a syllable.
+// ng+vowel syllables use SSML <phoneme alphabet="ipa"> for exact pronunciation.
+// All other syllables use plain text.
 // Returns { text, ssml }
 function ttsPayload(syllable) {
   const hint = NG_HINTS[syllable];
   if (hint) {
-    // Triple repetition inside SSML phoneme tag for contextual reinforcement
-    const ph = `<phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme>`;
     return {
-      text: `<speak>${ph} <break time="150ms"/> ${ph} <break time="150ms"/> ${ph}</speak>`,
+      text: `<speak>\n<phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme>\n</speak>`,
       ssml: true,
     };
   }
