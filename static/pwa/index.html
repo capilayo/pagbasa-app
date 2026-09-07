@@ -404,17 +404,16 @@ function buildChart() {
 
 // ═══════════════════════════════════════════════════
 //  PRONUNCIATION MAP
-//  Maps display syllables → phonetic hint sent to TTS
-//  Needed for ng+vowel combos that ElevenLabs mispronounces
+//  Maps display syllables → first syllable of a real Tagalog word
+//  that starts with that sound, so ElevenLabs pronounces it correctly.
+//  The button still shows the original syllable; only the TTS input changes.
 // ═══════════════════════════════════════════════════
-// Phonetic spellings sent to ElevenLabs instead of the raw syllable.
-// The button still shows the original syllable; only the TTS input changes.
 const PHONETIC_HINT = {
-  'nga': 'nga',          // real word ✅
-  'nge': 'ngeh',         // hint: "nge" sounds like "ngeh"
-  'ngi': 'ngee',         // hint: sounds like "ngee"
-  'ngo': 'ngow',         // hint: sounds like "ngow"
-  'ngu': 'ngoo',         // hint: sounds like "ngoo"
+  'nga': 'nganga',   // nganga  = to open one's mouth
+  'nge': 'nenge',    // nenge   = nickname for a young girl
+  'ngi': 'ngipin',   // ngipin  = tooth
+  'ngo': 'ngongo',   // ngongo  = nasal voice / speaking style
+  'ngu': 'nguya',    // nguya   = to chew
 };
 
 function ttsText(syllable) {
