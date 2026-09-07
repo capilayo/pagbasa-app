@@ -431,31 +431,35 @@ function buildChart() {
 // SSML IPA proved unreliable for nge/ngi/ngo/ngu on ElevenLabs multilingual v2.
 // Solution: send a real Tagalog word that STARTS with the target ng+vowel sound.
 // The model pronounces the full word naturally — child hears the correct onset.
-// Same strategy that makes "nga" work: plain text of a known word.
+//
+// Fields:
+//   word       — text sent to ElevenLabs TTS
+//   stopAfterMs — if set, stop audio playback after this many ms (trims trailing syllables)
 //
 // Words chosen (verified real Tagalog):
-//   nga  → "nga"    (particle — model knows it perfectly)
-//   nge  → "nenge"  (nickname for a young girl)
-//   ngi  → "ngipin" (tooth)
-//   ngo  → "ngongo" (nasal speaking style)
-//   ngu  → "nguya"  (to chew)
+//   nga  → "nga"    — single syllable, plays fully
+//   nge  → "nenge"  — ne·nge, child hears "nge" at end
+//   ngi  → "ngipin" — ngi·pin, stop after ~350ms to cut "pin"
+//   ngo  → "ngongo" — ngo·ngo, child hears "ngo" onset
+//   ngu  → "nguya"  — ngu·ya, child hears "ngu" onset
 const NG_WORD = {
-  'nga': 'nga',
-  'nge': 'nenge',
-  'ngi': 'ngi',
-  'ngo': 'ngongo',
-  'ngu': 'nguya',
+  'nga': { word: 'nga'    },
+  'nge': { word: 'nenge'  },
+  'ngi': { word: 'ngipin', stopAfterMs: 350 },  // send full word for correct onset, trim "pin"
+  'ngo': { word: 'ngongo' },
+  'ngu': { word: 'nguya'  },
 };
 
 // Builds the TTS payload for a syllable.
-// ng+vowel → plain text real Tagalog word (same pattern as n-row)
+// ng+vowel → real Tagalog word (plain text, same pattern as n-row)
 // all others → plain text syllable as-is
-// Returns { text, ssml }
+// Returns { text, ssml, stopAfterMs }
 function ttsPayload(syllable) {
-  if (NG_WORD[syllable]) {
-    return { text: NG_WORD[syllable], ssml: false };
+  const hint = NG_WORD[syllable];
+  if (hint) {
+    return { text: hint.word, ssml: false, stopAfterMs: hint.stopAfterMs || null };
   }
-  return { text: syllable, ssml: false };
+  return { text: syllable, ssml: false, stopAfterMs: null };
 }
 
 // ═══════════════════════════════════════════════════
@@ -471,7 +475,7 @@ async function callElevenLabsTTS(text) {
     ELEVENLABS_CONFIG.apiKey.startsWith('your_')
   ) return null;
   try {
-    const { text: ttsText, ssml } = ttsPayload(text);
+    const { text: ttsText, ssml, stopAfterMs } = ttsPayload(text);
     const res = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_CONFIG.voiceIdTL}?output_format=mp3_44100_128`,
       {
@@ -491,7 +495,7 @@ async function callElevenLabsTTS(text) {
       }
     );
     if (!res.ok) { console.error('ElevenLabs error:', res.status); return null; }
-    return URL.createObjectURL(await res.blob());
+    return { url: URL.createObjectURL(await res.blob()), stopAfterMs };
   } catch (e) { console.error(e); return null; }
 }
 
@@ -523,18 +527,24 @@ async function playText(text, btnId) {
   }
 
   setTTSState(true);
-  const url = await callElevenLabsTTS(text);
+  const result = await callElevenLabsTTS(text);
 
-  if (url) {
+  if (result) {
+    const { url, stopAfterMs } = result;
     const audio = new Audio(url);
-    audio.onended = () => {
+    const cleanup = () => {
       setTTSState(false);
       if (btnId) {
         const btn = document.getElementById(btnId);
         if (btn) btn.classList.remove('playing');
       }
     };
+    audio.onended = cleanup;
     audio.play();
+    // If stopAfterMs is set, stop early to trim trailing syllables (e.g. "pin" in "ngipin")
+    if (stopAfterMs) {
+      setTimeout(() => { audio.pause(); audio.currentTime = 0; cleanup(); }, stopAfterMs);
+    }
     return;
   }
 
@@ -632,12 +642,16 @@ async function playTextAndWait(text, btnId) {
     };
 
     (async () => {
-      const url = await callElevenLabsTTS(text);
-      if (url) {
+      const result = await callElevenLabsTTS(text);
+      if (result) {
+        const { url, stopAfterMs } = result;
         const audio = new Audio(url);
         audio.onended = done;
         audio.onerror = done;
         audio.play();
+        if (stopAfterMs) {
+          setTimeout(() => { audio.pause(); audio.currentTime = 0; done(); }, stopAfterMs);
+        }
         return;
       }
       if ('speechSynthesis' in window) {
