@@ -443,23 +443,29 @@ function buildChart() {
 //   ngo  → speaks "ngo",    next_text "ngongo"  /ŋo/
 //   ngu  → speaks "ngu",    next_text "nguya"   /ŋu/
 const NG_WORD = {
-  'nga': { text: 'nga', nextText: 'nganga'  },
-  'nge': { text: 'nge', nextText: 'nenge'   },
-  'ngi': { text: 'ngi', nextText: 'ngipin'  },
-  'ngo': { text: 'ngo', nextText: 'ngopin'  },  // mirrors ngipin pattern: ngo + different consonant
-  'ngu': { text: 'ngu', nextText: 'nguya'   },
+  'nga': { text: 'nga',   nextText: 'nganga', prevText: 'ang' },
+  'nge': { text: 'nge',   nextText: 'nenge',  prevText: 'ang' },
+  'ngi': { text: 'ngi',   nextText: 'ngipin', prevText: 'ang' },
+  'ngo': { text: 'ngongo',nextText: 'ngongo', prevText: 'ang', stopAfterMs: 380 }, // real word + trim after ngo
+  'ngu': { text: 'ngu',   nextText: 'nguya',  prevText: 'ang' },
 };
 
 // Builds the TTS payload for a syllable.
-// ng+vowel → syllable text + nextText context word
+// ng+vowel → syllable text + prev/next context words + optional stopAfterMs trim
 // all others → plain text as-is
-// Returns { text, nextText, ssml }
+// Returns { text, prevText, nextText, ssml, stopAfterMs }
 function ttsPayload(syllable) {
   const hint = NG_WORD[syllable];
   if (hint) {
-    return { text: hint.text, nextText: hint.nextText, ssml: false };
+    return {
+      text: hint.text,
+      prevText: hint.prevText || null,
+      nextText: hint.nextText || null,
+      ssml: false,
+      stopAfterMs: hint.stopAfterMs || null,
+    };
   }
-  return { text: syllable, nextText: null, ssml: false };
+  return { text: syllable, prevText: null, nextText: null, ssml: false, stopAfterMs: null };
 }
 
 // ═══════════════════════════════════════════════════
@@ -475,7 +481,7 @@ async function callElevenLabsTTS(text) {
     ELEVENLABS_CONFIG.apiKey.startsWith('your_')
   ) return null;
   try {
-    const { text: ttsText, nextText, ssml } = ttsPayload(text);
+    const { text: ttsText, prevText, nextText, ssml, stopAfterMs } = ttsPayload(text);
     const res = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_CONFIG.voiceIdTL}?output_format=mp3_44100_128`,
       {
@@ -489,14 +495,15 @@ async function callElevenLabsTTS(text) {
           text: ttsText,
           model_id: ELEVENLABS_CONFIG.model || 'eleven_multilingual_v2',
           language_code: 'fil',
-          ...(ssml && { text_type: 'ssml' }),
-          ...(nextText && { next_text: nextText }),
+          ...(ssml     && { text_type:      ssml }),
+          ...(prevText && { previous_text:  prevText }),
+          ...(nextText && { next_text:      nextText }),
           voice_settings: { stability: 0.5, similarity_boost: 0.75 },
         }),
       }
     );
     if (!res.ok) { console.error('ElevenLabs error:', res.status); return null; }
-    return { url: URL.createObjectURL(await res.blob()), stopAfterMs: null };
+    return { url: URL.createObjectURL(await res.blob()), stopAfterMs };
   } catch (e) { console.error(e); return null; }
 }
 
