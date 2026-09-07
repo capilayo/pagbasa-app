@@ -467,8 +467,9 @@ let NG_HINTS = { ...NG_HINTS_FALLBACK };
 function ttsPayload(syllable) {
   const hint = NG_HINTS[syllable];
   if (hint) {
+    // <break> after phoneme prevents audio cut-off; trailing "." cues natural ending
     return {
-      text: `<speak>\n<phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme>\n</speak>`,
+      text: `<speak><phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme><break time="400ms"/></speak>`,
       ssml: true,
     };
   }
