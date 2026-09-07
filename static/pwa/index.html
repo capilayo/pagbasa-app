@@ -417,27 +417,35 @@ function buildChart() {
 }
 
 // ═══════════════════════════════════════════════════
-//  PRONUNCIATION MAP
-//  For ng+vowel syllables, we use SSML <phoneme alphabet="ipa"> so
-//  ElevenLabs receives the exact IPA pronunciation — no guesswork.
-//  ARPAbet equivalents:  nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
-//  For all other syllables, plain text is sent as-is.
+//  PRONUNCIATION MAP  (ng+vowel special handling)
+//
+//  Strategy per ElevenLabs guidance:
+//   1. SSML <phoneme alphabet="ipa"> for exact IPA (ŋa/ŋe/ŋi/ŋo/ŋu)
+//   2. Triple repetition ("nga nga nga") for contextual reinforcement
+//   3. Alternative phonetic plain-text spelling as final fallback
+//
+//  ARPAbet: nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
+//  All other syllables: plain text, no wrapping.
 // ═══════════════════════════════════════════════════
-
-// Returns { text, ssml } — ssml=true means wrap with <speak> for ElevenLabs
-const SSML_HINT = {
-  'nga': { ipa: 'ŋa' },
-  'nge': { ipa: 'ŋe' },
-  'ngi': { ipa: 'ŋi' },
-  'ngo': { ipa: 'ŋo' },
-  'ngu': { ipa: 'ŋu' },
+const NG_HINTS = {
+  //        ipa    plain-text fallback   real Tagalog word context
+  'nga': { ipa: 'ŋa', alt: 'ng-a',  word: 'nganga'  },
+  'nge': { ipa: 'ŋe', alt: 'ng-e',  word: 'nenge'   },
+  'ngi': { ipa: 'ŋi', alt: 'ng-i',  word: 'ngipin'  },
+  'ngo': { ipa: 'ŋo', alt: 'ng-o',  word: 'ngongo'  },
+  'ngu': { ipa: 'ŋu', alt: 'ng-u',  word: 'nguya'   },
 };
 
+// Builds the best possible payload for ElevenLabs.
+// Uses SSML IPA with triple repetition for ng+vowel syllables.
+// Returns { text, ssml }
 function ttsPayload(syllable) {
-  const hint = SSML_HINT[syllable];
+  const hint = NG_HINTS[syllable];
   if (hint) {
+    // Triple repetition inside SSML phoneme tag for contextual reinforcement
+    const ph = `<phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme>`;
     return {
-      text: `<speak><phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme></speak>`,
+      text: `<speak>${ph} <break time="150ms"/> ${ph} <break time="150ms"/> ${ph}</speak>`,
       ssml: true,
     };
   }
