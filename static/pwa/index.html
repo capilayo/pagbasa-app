@@ -418,21 +418,30 @@ function buildChart() {
 
 // ═══════════════════════════════════════════════════
 //  PRONUNCIATION MAP
-//  Maps display syllables → real Tagalog word that starts with that
-//  sound, so ElevenLabs pronounces the ng-onset correctly.
-//  IPA:  nga=/ŋa/  nge=/ŋe/  ngi=/ŋi/  ngo=/ŋo/  ngu=/ŋu/
-//  The button still shows the original syllable; only TTS input changes.
+//  For ng+vowel syllables, we use SSML <phoneme alphabet="ipa"> so
+//  ElevenLabs receives the exact IPA pronunciation — no guesswork.
+//  ARPAbet equivalents:  nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
+//  For all other syllables, plain text is sent as-is.
 // ═══════════════════════════════════════════════════
-const PHONETIC_HINT = {
-  'nga': 'nganga',   // /ŋa/ — nganga  = to open one's mouth
-  'nge': 'nenge',    // /ŋe/ — nenge   = nickname for a young girl
-  'ngi': 'ngipin',   // /ŋi/ — ngipin  = tooth
-  'ngo': 'ngongo',   // /ŋo/ — ngongo  = nasal voice / speaking style
-  'ngu': 'nguya',    // /ŋu/ — nguya   = to chew
+
+// Returns { text, ssml } — ssml=true means wrap with <speak> for ElevenLabs
+const SSML_HINT = {
+  'nga': { ipa: 'ŋa' },
+  'nge': { ipa: 'ŋe' },
+  'ngi': { ipa: 'ŋi' },
+  'ngo': { ipa: 'ŋo' },
+  'ngu': { ipa: 'ŋu' },
 };
 
-function ttsText(syllable) {
-  return PHONETIC_HINT[syllable] || syllable;
+function ttsPayload(syllable) {
+  const hint = SSML_HINT[syllable];
+  if (hint) {
+    return {
+      text: `<speak><phoneme alphabet="ipa" ph="${hint.ipa}">${syllable}</phoneme></speak>`,
+      ssml: true,
+    };
+  }
+  return { text: syllable, ssml: false };
 }
 
 // ═══════════════════════════════════════════════════
@@ -448,6 +457,7 @@ async function callElevenLabsTTS(text) {
     ELEVENLABS_CONFIG.apiKey.startsWith('your_')
   ) return null;
   try {
+    const { text: ttsText, ssml } = ttsPayload(text);
     const res = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_CONFIG.voiceIdTL}?output_format=mp3_44100_128`,
       {
@@ -458,9 +468,10 @@ async function callElevenLabsTTS(text) {
           'Accept':       'audio/mpeg',
         },
         body: JSON.stringify({
-          text,
+          text: ttsText,
           model_id: ELEVENLABS_CONFIG.model || 'eleven_multilingual_v2',
           language_code: 'fil',
+          ...(ssml && { text_type: 'ssml' }),
           voice_settings: { stability: 0.5, similarity_boost: 0.75 },
         }),
       }
@@ -498,7 +509,7 @@ async function playText(text, btnId) {
   }
 
   setTTSState(true);
-  const url = await callElevenLabsTTS(ttsText(text));
+  const url = await callElevenLabsTTS(text);
 
   if (url) {
     const audio = new Audio(url);
@@ -607,7 +618,7 @@ async function playTextAndWait(text, btnId) {
     };
 
     (async () => {
-      const url = await callElevenLabsTTS(ttsText(text));
+      const url = await callElevenLabsTTS(text);
       if (url) {
         const audio = new Audio(url);
         audio.onended = done;
