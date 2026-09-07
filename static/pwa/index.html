@@ -403,6 +403,25 @@ function buildChart() {
 }
 
 // ═══════════════════════════════════════════════════
+//  PRONUNCIATION MAP
+//  Maps display syllables → phonetic hint sent to TTS
+//  Needed for ng+vowel combos that ElevenLabs mispronounces
+// ═══════════════════════════════════════════════════
+// Phonetic spellings sent to ElevenLabs instead of the raw syllable.
+// The button still shows the original syllable; only the TTS input changes.
+const PHONETIC_HINT = {
+  'nga': 'nga',          // real word ✅
+  'nge': 'ngeh',         // hint: "nge" sounds like "ngeh"
+  'ngi': 'ngee',         // hint: sounds like "ngee"
+  'ngo': 'ngow',         // hint: sounds like "ngow"
+  'ngu': 'ngoo',         // hint: sounds like "ngoo"
+};
+
+function ttsText(syllable) {
+  return PHONETIC_HINT[syllable] || syllable;
+}
+
+// ═══════════════════════════════════════════════════
 //  TTS
 // ═══════════════════════════════════════════════════
 let currentBtnId = null;
@@ -465,7 +484,7 @@ async function playText(text, btnId) {
   }
 
   setTTSState(true);
-  const url = await callElevenLabsTTS(text);
+  const url = await callElevenLabsTTS(ttsText(text));
 
   if (url) {
     const audio = new Audio(url);
@@ -574,7 +593,7 @@ async function playTextAndWait(text, btnId) {
     };
 
     (async () => {
-      const url = await callElevenLabsTTS(text);
+      const url = await callElevenLabsTTS(ttsText(text));
       if (url) {
         const audio = new Audio(url);
         audio.onended = done;
