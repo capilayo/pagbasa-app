@@ -443,11 +443,11 @@ function buildChart() {
 //   ngo  → speaks "ngo",    next_text "ngongo"  /ŋo/
 //   ngu  → speaks "ngu",    next_text "nguya"   /ŋu/
 const NG_WORD = {
-  'nga': { text: 'nga',   nextText: 'nganga', prevText: 'ang' },
-  'nge': { text: 'nge',   nextText: 'nenge',  prevText: 'ang' },
-  'ngi': { text: 'ngi',   nextText: 'ngipin', prevText: 'ang' },
-  'ngo': { text: 'ngongo',nextText: 'ngongo', prevText: 'ang', stopAfterMs: 380 }, // real word + trim after ngo
-  'ngu': { text: 'ngu',   nextText: 'nguya',  prevText: 'ang' },
+  'nga': { text: 'nga', nextText: 'nganga', prevText: 'ang' },
+  'nge': { text: 'nge', nextText: 'nenge',  prevText: 'ang' },
+  'ngi': { text: 'ngi', nextText: 'ngipin', prevText: 'ang' },
+  'ngo': { text: 'ngo', nextText: 'ngopin', prevText: 'ang ngi' }, // prevText "ang ngi" seeds ng-onset; ngopin mirrors ngipin
+  'ngu': { text: 'ngu', nextText: 'nguya',  prevText: 'ang' },
 };
 
 // Builds the TTS payload for a syllable.
