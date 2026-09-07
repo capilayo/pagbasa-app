@@ -188,6 +188,15 @@
       position: relative;
     }
     .syl-btn:active   { transform: scale(.9); }
+    .syl-btn .ipa {
+      display: block;
+      font-size: .52rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      opacity: .6;
+      line-height: 1.2;
+      margin-top: 1px;
+    }
     .syl-btn.playing  {
       background: var(--accent);
       border-color: var(--accent);
@@ -388,14 +397,19 @@ function buildChart() {
     label.className = 'cons-label';
     label.textContent = cons;
     row.appendChild(label);
-    // Syllable buttons
+    // Syllable buttons — show IPA sub-label on ng+vowel row
+    const NG_IPA = { 'nga':'/ŋa/', 'nge':'/ŋe/', 'ngi':'/ŋi/', 'ngo':'/ŋo/', 'ngu':'/ŋu/' };
     VOWELS.forEach(v => {
       const syl = cons + v;
       const btn = document.createElement('button');
       btn.className = 'syl-btn';
       btn.id = 's-' + syl;
-      btn.textContent = syl;
       btn.onclick = () => playSyl(syl);
+      if (NG_IPA[syl]) {
+        btn.innerHTML = syl + '<span class="ipa">' + NG_IPA[syl] + '</span>';
+      } else {
+        btn.textContent = syl;
+      }
       row.appendChild(btn);
     });
     container.appendChild(row);
@@ -404,16 +418,17 @@ function buildChart() {
 
 // ═══════════════════════════════════════════════════
 //  PRONUNCIATION MAP
-//  Maps display syllables → first syllable of a real Tagalog word
-//  that starts with that sound, so ElevenLabs pronounces it correctly.
-//  The button still shows the original syllable; only the TTS input changes.
+//  Maps display syllables → real Tagalog word that starts with that
+//  sound, so ElevenLabs pronounces the ng-onset correctly.
+//  IPA:  nga=/ŋa/  nge=/ŋe/  ngi=/ŋi/  ngo=/ŋo/  ngu=/ŋu/
+//  The button still shows the original syllable; only TTS input changes.
 // ═══════════════════════════════════════════════════
 const PHONETIC_HINT = {
-  'nga': 'NGAH',   // (like the ending of siNG + ah)
-  'nge': 'NGEH',    // (like the ending of siNG + ah)
-  'ngi': 'NGEE',   // (like the ending of siNG + ee)
-  'ngo': 'NGOH',   // (like the ending of siNG + ee)
-  'ngu': 'NGOO',    //(like the ending of siNG + oo in food)
+  'nga': 'nganga',   // /ŋa/ — nganga  = to open one's mouth
+  'nge': 'nenge',    // /ŋe/ — nenge   = nickname for a young girl
+  'ngi': 'ngipin',   // /ŋi/ — ngipin  = tooth
+  'ngo': 'ngongo',   // /ŋo/ — ngongo  = nasal voice / speaking style
+  'ngu': 'nguya',    // /ŋu/ — nguya   = to chew
 };
 
 function ttsText(syllable) {
