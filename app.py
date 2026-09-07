@@ -60,6 +60,11 @@ def sw():
 def icons(filename):
     return send_from_directory(ICONS_DIR, filename)
 
+@app.route("/pwa/ng-ipa.json")
+def ng_ipa():
+    return send_from_directory(PWA_DIR, "ng-ipa.json",
+                               mimetype="application/json; charset=utf-8")
+
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

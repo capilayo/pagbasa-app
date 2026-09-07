@@ -419,29 +419,50 @@ function buildChart() {
 // ═══════════════════════════════════════════════════
 //  PRONUNCIATION MAP  (ng+vowel special handling)
 //
-//  IPA values confirmed via open-dict-data/ipa-dict Malay dictionary
-//  (Malay shares the same velar nasal ŋ onset as Tagalog):
-//    ngah /ŋah/ → nga /ŋa/    ngebut /ŋebut/ → nge /ŋe/
-//    ngeri /ŋeri/ → ngi /ŋi/  ngomél /ŋomel/ → ngo /ŋo/
-//    ngilu /ŋilu/ → ngu /ŋu/
+//  IPA values sourced from open-dict-data/ipa-dict (Malay, ma.txt).
+//  Malay shares the same velar nasal ŋ onset as Tagalog.
+//  The map is loaded dynamically from /pwa/ng-ipa.json at startup.
+//  If the fetch fails, these hardcoded fallbacks are used.
 //
-//  Primary:  SSML <phoneme alphabet="ipa"> — exact IPA sent to ElevenLabs
-//  Fallback: Malay word starting with the same ng+vowel onset (better model
-//            coverage than Tagalog for rare syllables in eleven_multilingual_v2)
 //  ARPAbet:  nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
 // ═══════════════════════════════════════════════════
-const NG_HINTS = {
-  // syllable  IPA    alt spelling  Malay word (ipa-dict ma.txt verified)
-  'nga': { ipa: 'ŋa', alt: 'ng-a', word: 'ngah'    }, // Malay ngah   /ŋah/
-  'nge': { ipa: 'ŋe', alt: 'ng-e', word: 'ngebut'  }, // Malay ngebut /ŋebut/
-  'ngi': { ipa: 'ŋi', alt: 'ng-i', word: 'ngeri'   }, // Malay ngeri  /ŋeri/
-  'ngo': { ipa: 'ŋo', alt: 'ng-o', word: 'ngomél'  }, // Malay ngomél /ŋomel/
-  'ngu': { ipa: 'ŋu', alt: 'ng-u', word: 'ngilu'   }, // Malay ngilu  /ŋilu/
+
+// Hardcoded fallback — used if /pwa/ng-ipa.json fetch fails
+const NG_HINTS_FALLBACK = {
+  'nga': { ipa: 'ŋa' },
+  'nge': { ipa: 'ŋe' },
+  'ngi': { ipa: 'ŋi' },
+  'ngo': { ipa: 'ŋo' },
+  'ngu': { ipa: 'ŋu' },
 };
 
+// Live map — populated from ng-ipa.json, falls back to NG_HINTS_FALLBACK
+let NG_HINTS = { ...NG_HINTS_FALLBACK };
+
+// Load IPA dictionary from server at startup (programmatic mapping)
+(async function loadNgIpaDict() {
+  try {
+    const res = await fetch('/pwa/ng-ipa.json');
+    if (!res.ok) throw new Error('fetch failed');
+    const dict = await res.json();
+    // Rebuild NG_HINTS from JSON — only keep entries with a valid ipa field
+    const built = {};
+    for (const [syl, data] of Object.entries(dict)) {
+      if (syl.startsWith('_')) continue;  // skip metadata keys
+      if (data.ipa) built[syl] = data;
+    }
+    if (Object.keys(built).length > 0) {
+      NG_HINTS = built;
+      console.info('[pagbasa] ng-ipa.json loaded — IPA map active:', Object.keys(built));
+    }
+  } catch (e) {
+    console.warn('[pagbasa] ng-ipa.json unavailable, using fallback IPA map:', e.message);
+  }
+})();
+
 // Builds the TTS payload for a syllable.
-// ng+vowel syllables use SSML <phoneme alphabet="ipa"> for exact pronunciation.
-// All other syllables use plain text.
+// ng+vowel syllables: SSML <phoneme alphabet="ipa"> with IPA from ng-ipa.json.
+// All other syllables: plain text sent as-is.
 // Returns { text, ssml }
 function ttsPayload(syllable) {
   const hint = NG_HINTS[syllable];

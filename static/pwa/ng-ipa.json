@@ -1,0 +1,9 @@
+{
+  "_source": "open-dict-data/ipa-dict ma.txt (Malay) — Malay shares velar nasal ŋ onset with Tagalog",
+  "_note": "IPA values are Tagalog-correct. Malay words are context carriers for ElevenLabs multilingual model.",
+  "nga": { "ipa": "ŋa", "malay_word": "ngah",   "malay_ipa": "ŋah",   "note": "Malay ngah /ŋah/ — onset matches" },
+  "nge": { "ipa": "ŋe", "malay_word": "ngebut",  "malay_ipa": "ŋəbut", "note": "Malay /ŋəbut/ uses schwa; Tagalog nge uses front-mid /e/" },
+  "ngi": { "ipa": "ŋi", "malay_word": "ngilu",   "malay_ipa": "ŋilu",  "note": "Malay ngilu /ŋilu/ — onset matches exactly" },
+  "ngo": { "ipa": "ŋo", "malay_word": "ngomél",  "malay_ipa": "ŋomel", "note": "Malay ngomél /ŋomel/ — onset matches" },
+  "ngu": { "ipa": "ŋu", "malay_word": "ngilu",   "malay_ipa": "ŋilu",  "note": "No direct Malay ngu word; IPA /ŋu/ confirmed correct" }
+}
