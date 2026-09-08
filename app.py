@@ -65,6 +65,10 @@ def ng_ipa():
     return send_from_directory(PWA_DIR, "ng-ipa.json",
                                mimetype="application/json; charset=utf-8")
 
+
+@app.route("/audio/<filename>")
+def audio(filename):
+    return send_from_directory(BASE_DIR, filename)
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
