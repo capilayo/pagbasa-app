@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fil">
 <head>
   <meta charset="UTF-8" />
@@ -448,6 +448,9 @@ const NG_WORD = {
   'ngi': { text: 'ngi', nextText: 'ngipin', prevText: 'ang' },
   'ngo': { text: 'ngo', nextText: 'ngongo',  prevText: 'ang' },
   'ngu': { text: 'ngu', nextText: 'ngunit', prevText: 'ang' },
+  'mo':  { text: 'mo',  nextText: 'motibo', prevText: 'ka' },
+  'na':  { text: 'na',  nextText: 'naman',  prevText: 'ay' },
+  'mga': { text: 'manga', nextText: 'mangga', prevText: 'ang' },
 };
 
 // Local MP3 overrides � these play directly without calling ElevenLabs.
@@ -542,6 +545,28 @@ async function playText(text, btnId) {
   if (btnId) {
     const btn = document.getElementById(btnId);
     if (btn) btn.classList.add('playing');
+  }
+
+  // Check local audio override first
+  const normalizedText = text.toLowerCase().trim();
+  const localUrl = LOCAL_AUDIO[normalizedText];
+  if (localUrl) {
+    setTTSState(true);
+    const audio = new Audio(localUrl);
+    let finished = false;
+    const cleanup = () => {
+      if (finished) return;
+      finished = true;
+      setTTSState(false);
+      if (btnId) {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.classList.remove('playing');
+      }
+    };
+    audio.onended = cleanup;
+    audio.onerror = cleanup;
+    audio.play();
+    return;
   }
 
   setTTSState(true);
@@ -671,6 +696,17 @@ async function playTextAndWait(text, btnId) {
       if (btn) { btn.classList.remove('playing'); btn.classList.add('done'); }
       resolve();
     };
+
+    // Check local audio override first
+    const normalizedText = text.toLowerCase().trim();
+    const localUrl = LOCAL_AUDIO[normalizedText];
+    if (localUrl) {
+      const audio = new Audio(localUrl);
+      audio.onended = done;
+      audio.onerror = done;
+      audio.play();
+      return;
+    }
 
     (async () => {
       const result = await callElevenLabsTTS(text);
