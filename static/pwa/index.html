@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fil">
 <head>
   <meta charset="UTF-8" />
@@ -40,7 +40,7 @@
       padding-bottom: 32px;
     }
 
-    /* â”€â”€ Header â”€â”€ */
+    /* ── Header ── */
     header {
       width: 100%;
       background: var(--primary);
@@ -67,7 +67,7 @@
       text-decoration: none;
     }
 
-    /* â”€â”€ Container â”€â”€ */
+    /* ── Container ── */
     .container {
       width: 100%;
       max-width: 520px;
@@ -77,7 +77,7 @@
       gap: 14px;
     }
 
-    /* â”€â”€ Mode tabs â”€â”€ */
+    /* ── Mode tabs ── */
     .mode-tabs {
       display: flex;
       gap: 8px;
@@ -97,7 +97,7 @@
     }
     .mode-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 
-    /* â”€â”€ Played bubble â”€â”€ */
+    /* ── Played bubble ── */
     .played-bubble {
       background: var(--primary);
       color: #fff;
@@ -124,7 +124,7 @@
       100% { transform: scale(1); }
     }
 
-    /* â”€â”€ Syllabary grid â”€â”€ */
+    /* ── Syllabary grid ── */
     .card {
       background: var(--surface);
       border-radius: 16px;
@@ -211,7 +211,7 @@
       color: var(--green);
     }
 
-    /* â”€â”€ Vowel-only row â”€â”€ */
+    /* ── Vowel-only row ── */
     .vowel-row {
       display: grid;
       grid-template-columns: 44px repeat(5, 1fr);
@@ -225,7 +225,7 @@
       font-size: 1.2rem;
     }
 
-    /* â”€â”€ Custom lesson editor â”€â”€ */
+    /* ── Custom lesson editor ── */
     .editor-card {
       background: var(--surface);
       border-radius: 16px;
@@ -297,7 +297,7 @@
     .play-all-row { display: none; gap: 8px; margin-top: 10px; }
     .play-all-row.visible { display: flex; }
 
-    /* â”€â”€ TTS indicator â”€â”€ */
+    /* ── TTS indicator ── */
     .tts-indicator { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: var(--muted); padding: 4px 0; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background .3s; }
     .dot.speaking { background: var(--green); animation: blink .6s infinite alternate; }
@@ -310,7 +310,7 @@
 
 <header>
   <div>
-    <h1>Unang Hakbang âœ¨<span>sa Pagbasa</span></h1>
+    <h1>Unang Hakbang ✨<span>sa Pagbasa</span></h1>
   </div>
   
 </header>
@@ -319,20 +319,20 @@
 
   <!-- Mode selector -->
   <div class="mode-tabs">
-    <button class="mode-btn active" id="mode-chart"  onclick="setMode('chart')">ðŸ“Š Syllabary Chart</button>
-    <button class="mode-btn"        id="mode-custom" onclick="setMode('custom')">âœï¸ Custom Lesson</button>
+    <button class="mode-btn active" id="mode-chart"  onclick="setMode('chart')">📊 Syllabary Chart</button>
+    <button class="mode-btn"        id="mode-custom" onclick="setMode('custom')">✏️ Custom Lesson</button>
   </div>
 
   <!-- Currently playing display -->
-  <div class="played-bubble" id="played-bubble">â€”</div>
+  <div class="played-bubble" id="played-bubble">—</div>
   <div class="tts-indicator">
     <div class="dot" id="tts-dot"></div>
     <span id="tts-status">Pindutin ang pantig para marinig</span>
   </div>
 
-  <!-- â”€â”€ SYLLABARY CHART â”€â”€ -->
+  <!-- ── SYLLABARY CHART ── -->
   <div class="card" id="chart-section">
-    <div class="card-label">ðŸ“– I-tap ang pantig para marinig</div>
+    <div class="card-label">📖 I-tap ang pantig para marinig</div>
 
     <!-- Vowel header row -->
     <div class="vowel-header">
@@ -342,7 +342,7 @@
 
     <!-- Pure vowels -->
     <div class="vowel-row">
-      <div class="cons-label">â€”</div>
+      <div class="cons-label">—</div>
       <button class="syl-btn vowel" onclick="playSyl('a')" id="s-a">a</button>
       <button class="syl-btn vowel" onclick="playSyl('e')" id="s-e">e</button>
       <button class="syl-btn vowel" onclick="playSyl('i')" id="s-i">i</button>
@@ -354,38 +354,38 @@
     <div id="syl-rows"></div>
   </div>
 
-  <!-- â”€â”€ CUSTOM LESSON EDITOR â”€â”€ -->
+  <!-- ── CUSTOM LESSON EDITOR ── -->
   <div class="editor-card" id="custom-section">
-    <div class="editor-label">âœï¸ I-type ang sariling aralin</div>
+    <div class="editor-label">✏️ I-type ang sariling aralin</div>
     <textarea class="editor-textarea" id="custom-input"
       placeholder="I-type ang mga salita o pantig dito&#10;Halimbawa: ba be bi bo bu&#10;O kaya: pusa aso ibon isda kuneho"></textarea>
     <p class="editor-hint">Maghiwalay ng salita gamit ang espasyo o bagong linya. Pindutin ang Generate para makita ang mga butones.</p>
     <div class="btn-row">
-      <button class="btn btn-primary" id="btn-generate" onclick="generateCustom()">Generate â–¶</button>
-      <button class="btn btn-outline"  id="btn-clear"   onclick="clearCustom()">Clear âœ•</button>
+      <button class="btn btn-primary" id="btn-generate" onclick="generateCustom()">Generate ▶</button>
+      <button class="btn btn-outline"  id="btn-clear"   onclick="clearCustom()">Clear ✕</button>
     </div>
-    <!-- Read All / Stop row â€” shown only after Generate -->
+    <!-- Read All / Stop row — shown only after Generate -->
     <div class="play-all-row" id="play-all-row">
-      <button class="btn btn-green" id="btn-play-all" onclick="startPlayAll()">ðŸ”Š Basahin Lahat</button>
-      <button class="btn btn-red"   id="btn-stop"     onclick="stopPlayAll()" style="display:none;">â—¼ Itigil</button>
+      <button class="btn btn-green" id="btn-play-all" onclick="startPlayAll()">🔊 Basahin Lahat</button>
+      <button class="btn btn-red"   id="btn-stop"     onclick="stopPlayAll()" style="display:none;">◼ Itigil</button>
     </div>
     <div class="custom-chips" id="custom-chips"></div>
   </div>
 
 </div>
 
-<footer>Unang Hakbang sa Pagbasa Â· ElevenLabs TTS</footer>
+<footer>Unang Hakbang sa Pagbasa · ElevenLabs TTS</footer>
 
 <script>
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  SYLLABARY DATA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 const CONSONANTS = ['b','k','d','g','h','l','m','n','ng','p','r','s','t','w','y'];
 const VOWELS     = ['a','e','i','o','u'];
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  BUILD CHART
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 function buildChart() {
   const container = document.getElementById('syl-rows');
   container.innerHTML = '';
@@ -397,8 +397,8 @@ function buildChart() {
     label.className = 'cons-label';
     label.textContent = cons;
     row.appendChild(label);
-    // Syllable buttons â€” show IPA sub-label on ng+vowel row
-    const NG_IPA = { 'nga':'/Å‹a/', 'nge':'/Å‹e/', 'ngi':'/Å‹i/', 'ngo':'/Å‹o/', 'ngu':'/Å‹u/' };
+    // Syllable buttons — show IPA sub-label on ng+vowel row
+    const NG_IPA = { 'nga':'/ŋa/', 'nge':'/ŋe/', 'ngi':'/ŋi/', 'ngo':'/ŋo/', 'ngu':'/ŋu/' };
     VOWELS.forEach(v => {
       const syl = cons + v;
       const btn = document.createElement('button');
@@ -416,32 +416,32 @@ function buildChart() {
   });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  PRONUNCIATION MAP  (ng+vowel special handling)
 //
 //  IPA values sourced from open-dict-data/ipa-dict (Malay, ma.txt).
-//  Malay shares the same velar nasal Å‹ onset as Tagalog.
+//  Malay shares the same velar nasal ŋ onset as Tagalog.
 //  The map is loaded dynamically from /pwa/ng-ipa.json at startup.
 //  If the fetch fails, these hardcoded fallbacks are used.
 //
 //  ARPAbet:  nga=NG AA  nge=NG EH  ngi=NG IY  ngo=NG OW  ngu=NG UW
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 
 // ng+vowel pronunciation map.
-// Strategy: use ElevenLabs `next_text` for context â€” the model sees the full word
+// Strategy: use ElevenLabs `next_text` for context — the model sees the full word
 // for prosody/onset shaping but only SPEAKS the syllable text.
-// No audio trimming needed â€” no "pin" ever plays.
+// No audio trimming needed — no "pin" ever plays.
 //
 // Fields:
-//   text      â€” what ElevenLabs actually speaks (the syllable)
-//   nextText  â€” context word passed as next_text (shapes pronunciation, never spoken)
+//   text      — what ElevenLabs actually speaks (the syllable)
+//   nextText  — context word passed as next_text (shapes pronunciation, never spoken)
 //
 // Words chosen (verified real Tagalog, IPA-confirmed via ipa-dict Malay):
-//   nga  â†’ speaks "nga",    next_text "nganga"  /Å‹a/
-//   nge  â†’ speaks "nge",    next_text "nenge"   /Å‹e/
-//   ngi  â†’ speaks "ngi",    next_text "ngipin"  /Å‹i/  â† fixes the "pin" problem
-//   ngo  â†’ speaks "ngo",    next_text "ngongo"  /Å‹o/
-//   ngu  â†’ speaks "ngu",    next_text "ngunit"   /Å‹u/
+//   nga  → speaks "nga",    next_text "nganga"  /ŋa/
+//   nge  → speaks "nge",    next_text "nenge"   /ŋe/
+//   ngi  → speaks "ngi",    next_text "ngipin"  /ŋi/  ← fixes the "pin" problem
+//   ngo  → speaks "ngo",    next_text "ngongo"  /ŋo/
+//   ngu  → speaks "ngu",    next_text "ngunit"   /ŋu/
 const NG_WORD = {
   'nga': { text: 'nga', nextText: 'nganga', prevText: 'ang' },
   'nge': { text: 'nge', nextText: 'nenge',  prevText: 'ang' },
@@ -452,18 +452,19 @@ const NG_WORD = {
   'na':  { text: 'na',  nextText: 'naman',  prevText: 'ay' },
 };
 
-// Local MP3 overrides — these play directly without calling ElevenLabs.
+// Local MP3 overrides � these play directly without calling ElevenLabs.
 // Add an entry here for any syllable that has a pre-recorded audio file.
 const LOCAL_AUDIO = {
   'nga': '/audio/nga.mp3',
+  'nge': '/audio/nge.mp3',
   'ngi': '/audio/ngi.mp3',
   'ngo': '/audio/ngo.mp3',
   'ngu': '/audio/ngu.mp3',
 };
 
 // Builds the TTS payload for a syllable.
-// ng+vowel â†’ syllable text + prev/next context words + optional stopAfterMs trim
-// all others â†’ plain text as-is
+// ng+vowel → syllable text + prev/next context words + optional stopAfterMs trim
+// all others → plain text as-is
 // Returns { text, prevText, nextText, ssml, stopAfterMs }
 function ttsPayload(syllable) {
   const hint = NG_WORD[syllable];
@@ -479,9 +480,9 @@ function ttsPayload(syllable) {
   return { text: syllable, prevText: null, nextText: null, ssml: false, stopAfterMs: null };
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  TTS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 let currentBtnId = null;
 
 async function callElevenLabsTTS(text) {
@@ -521,7 +522,7 @@ async function callElevenLabsTTS(text) {
 function setTTSState(speaking) {
   document.getElementById('tts-dot').className = 'dot' + (speaking ? ' speaking' : '');
   document.getElementById('tts-status').textContent = speaking
-    ? 'Binabasaâ€¦'
+    ? 'Binabasa…'
     : 'Pindutin ang pantig para marinig';
 }
 
@@ -602,9 +603,9 @@ function playSyl(syl) {
   playText(syl, 's-' + syl);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  MODE TOGGLE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 function setMode(mode) {
   document.getElementById('mode-chart').classList.toggle('active',  mode === 'chart');
   document.getElementById('mode-custom').classList.toggle('active', mode === 'custom');
@@ -612,9 +613,9 @@ function setMode(mode) {
   document.getElementById('custom-section').classList.toggle('visible', mode === 'custom');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  CUSTOM LESSON
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 function generateCustom() {
   const raw    = document.getElementById('custom-input').value.trim();
   const tokens = raw.split(/[\s\n,]+/).map(t => t.trim()).filter(t => t.length > 0);
@@ -641,11 +642,11 @@ function clearCustom() {
   stopPlayAll();
   document.getElementById('custom-input').value = '';
   document.getElementById('custom-chips').innerHTML = '';
-  document.getElementById('played-bubble').textContent = 'â€”';
+  document.getElementById('played-bubble').textContent = '—';
   document.getElementById('play-all-row').classList.remove('visible');
 }
 
-// â”€â”€ Play All â€” waits for each audio to finish â”€â”€â”€â”€â”€â”€
+// ── Play All — waits for each audio to finish ──────
 let isPlayingAll  = false;
 let stopRequested = false;
 
@@ -753,18 +754,18 @@ function stopPlayAll() {
     .forEach(c => c.classList.remove('playing'));
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  INIT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 buildChart();
 </script>
 
 <!-- PWA Install Banner -->
 <div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1e1b4b;color:#fff;padding:14px 16px;align-items:center;justify-content:space-between;gap:12px;z-index:200;font-family:-apple-system,sans-serif;font-size:.88rem;">
-  <span>ðŸ“² I-install ang app sa iyong Android</span>
+  <span>📲 I-install ang app sa iyong Android</span>
   <div style="display:flex;gap:8px;flex-shrink:0;">
     <button id="pwa-install-btn" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.85rem;">I-install</button>
-    <button onclick="document.getElementById(&apos;pwa-banner&apos;).style.display=&apos;none&apos;" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.85rem;">âœ•</button>
+    <button onclick="document.getElementById(&apos;pwa-banner&apos;).style.display=&apos;none&apos;" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.85rem;">✕</button>
   </div>
 </div>
 
